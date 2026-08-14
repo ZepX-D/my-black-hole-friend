@@ -1,2 +1,6 @@
-# my-black-hole-friend
-god's description
+# 这是什么？
+这是一个为我的朋友创建的个人名片网页
+# 有哪些功能？
+帮助别人额了解我的朋友
+# 怎么运行
+双击打开 html
