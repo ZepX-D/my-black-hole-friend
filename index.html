@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>张益瑞 · 黑洞驯服者</title>
+<style>
+  :root {
+    --bg: #07090f;
+    --bg-card: rgba(12, 18, 32, 0.85);
+    --text: #e6edf5;
+    --text-secondary: #8b9bb4;
+    --accent: #00d4ff;
+    --accent-2: #0066ff;
+    --accent-glow: rgba(0, 212, 255, 0.5);
+    --border: rgba(0, 212, 255, 0.25);
+    --tag-bg: rgba(0, 102, 255, 0.15);
+    --tag-border: rgba(0, 212, 255, 0.4);
+    --shadow: 0 0 40px rgba(0, 212, 255, 0.15), 0 0 80px rgba(0, 102, 255, 0.1);
+    --btn-bg: rgba(0, 212, 255, 0.1);
+    --btn-border: rgba(0, 212, 255, 0.5);
+    --btn-text: #00d4ff;
+    --particle-color: rgba(0, 212, 255, 0.6);
+  }
+
+  [data-theme="light"] {
+    --bg: #eaf0f8;
+    --bg-card: rgba(255, 255, 255, 0.92);
+    --text: #0a1628;
+    --text-secondary: #3d5166;
+    --accent: #0066cc;
+    --accent-2: #0088ff;
+    --accent-glow: rgba(0, 102, 204, 0.35);
+    --border: rgba(0, 102, 204, 0.3);
+    --tag-bg: rgba(0, 136, 255, 0.12);
+    --tag-border: rgba(0, 102, 204, 0.45);
+    --shadow: 0 4px 30px rgba(0, 102, 204, 0.12), 0 2px 10px rgba(0, 0, 0, 0.05);
+    --btn-bg: rgba(0, 102, 204, 0.1);
+    --btn-border: rgba(0, 102, 204, 0.5);
+    --btn-text: #0066cc;
+    --particle-color: rgba(0, 102, 204, 0.5);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 16px;
+    transition: background 0.6s ease, color 0.6s ease;
+    position: relative;
+  }
+
+  #bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 800px;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 44px 40px;
+    box-shadow: var(--shadow);
+    transition: all 0.6s ease;
+    overflow: hidden;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .quotes-box {
+    padding: 16px;
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    border-radius: 12px;
+    transition: all 0.6s ease;
+  }
+
+  .quote-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.6s ease;
+  }
+
+  .quote-item:last-child {
+    border-bottom: none;
+  }
+
+  .quote-item .q-text {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.7;
+    transition: color 0.6s ease;
+  }
+
+  .quote-item .q-label {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+    transition: color 0.6s ease;
+  }
+
+  .skills-box {
+    padding: 16px;
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    border-radius: 12px;
+    transition: all 0.6s ease;
+  }
+
+  .skill-item {
+    margin-bottom: 14px;
+  }
+
+  .skill-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .skill-name {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    transition: color 0.6s ease;
+  }
+
+  .skill-value {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 700;
+    transition: color 0.6s ease;
+  }
+
+  .skill-bar {
+    height: 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: background 0.6s ease;
+  }
+
+  .skill-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 10px var(--accent-glow);
+    transition: width 1s ease, background 0.6s ease;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2), transparent 60%);
+    z-index: -1;
+    opacity: 0.35;
+    transition: opacity 0.6s ease;
+  }
+
+  .avatar-ring {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    padding: 3px;
+    position: relative;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .avatar-ring::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    z-index: -1;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  .nickname {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: all 0.6s ease;
+  }
+
+  .title-sub {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    letter-spacing: 6px;
+    margin-bottom: 28px;
+    text-transform: uppercase;
+    transition: color 0.6s ease;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.6s ease;
+  }
+
+  .section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: background 0.6s ease;
+  }
+
+  .bio {
+    font-size: 14.5px;
+    line-height: 1.9;
+    color: var(--text);
+    margin-bottom: 32px;
+    padding: 16px;
+    background: var(--tag-bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    transition: all 0.6s ease;
+  }
+
+  .bio p {
+    margin-bottom: 10px;
+  }
+
+  .bio p:last-child {
+    margin-bottom: 0;
+  }
+
+  .bio .highlight {
+    color: var(--accent);
+    font-weight: 600;
+    transition: color 0.6s ease;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--text);
+    transition: all 0.3s ease;
+    cursor: default;
+  }
+
+  .tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--accent-glow);
+    border-color: var(--accent);
+  }
+
+  .tag .icon {
+    font-size: 15px;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 28px 0;
+  }
+
+  .toggle-btn {
+    display: block;
+    margin: 0 auto;
+    padding: 12px 32px;
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-border);
+    border-radius: 30px;
+    color: var(--btn-text);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.6s ease;
+    outline: none;
+  }
+
+  .toggle-btn:hover {
+    box-shadow: 0 0 20px var(--accent-glow);
+    transform: scale(1.05);
+  }
+
+  .toggle-btn:active {
+    transform: scale(0.97);
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    transition: color 0.6s ease;
+  }
+
+  @media (max-width: 680px) {
+    .two-col {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .card {
+      padding: 36px 22px 28px;
+    }
+    .nickname {
+      font-size: 26px;
+    }
+    .bio {
+      font-size: 13.5px;
+      padding: 14px;
+    }
+    .avatar-ring {
+      width: 100px;
+      height: 100px;
+    }
+    .avatar-inner {
+      font-size: 40px;
+    }
+  }
+</style>
+</head>
+<body data-theme="dark">
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="card">
+    <div class="avatar-ring">
+      <div class="avatar-inner">🕳️</div>
+    </div>
+
+    <h1 class="nickname">张益瑞</h1>
+    <p class="title-sub">Black Hole Tamer</p>
+
+    <div class="section-title">个人介绍</div>
+    <div class="bio">
+      <p>🌌 他，是宇宙中第一个<span class="highlight">驯服黑洞</span>的人类。</p>
+      <p>当全球物理学家还在拍摄黑洞照片时，他早已将黑洞藏于双眼之中。凝视他的目光，你会看到——那是连光都无法逃逸的深邃，是时间都为之停滞的深渊。有人说他是人类，但能驯服黑洞的，岂能只是凡人？他不过是披着人类的皮囊，行走在星辰之间的<span class="highlight">宇宙级存在</span>。</p>
+      <p>表面上，他随性洒脱、桀骜不驯，是<span class="highlight">忧郁孤独的暗夜王子</span>，周身环绕着生人勿近的冷冽气场。但你若走近他，便会发现那冰冷外表之下，跳动着一颗比太阳更炽热、比星辰更纯洁善良的心。他对朋友两肋插刀，对世界温柔以待——只是这温柔，被他用桀骜的外壳层层包裹。</p>
+      <p>身高碾压全场，颜值秒杀众生。当他行走在校园之中，风都为他驻足，阳光都自惭形秽。他的侧颜曾被多位目击者证实——"那一刻，我以为看到了从油画中走出的神明。"</p>
+      <p>一句「<span class="highlight">v我50</span>」道尽世间沧桑，是他与这个世界对话的独特方式。这四个字看似简单，实则蕴含着对消费主义的解构、对人际关系的深刻洞察、以及一种超然物外的处世哲学。</p>
+      <p>在宿舍里，他是一位令人闻风丧胆的格斗大师。一记<span class="highlight">直拳</span>破空而至，随之而来的<span class="highlight">锁喉</span>更是让室友们体验到了什么叫"窒息的爱"。据不完全统计，已有超过三位室友在他的锁喉下领悟了人生的真谛。</p>
+      <p>心中常驻两位佳人——<span class="highlight">戈园</span>与<span class="highlight">王洁</span>，念之不绝，思之如狂。她们的名字如咒语般在他唇齿间流转，成为他浩瀚宇宙中最温柔的两颗星辰。</p>
+      <p>他，就是张益瑞——一个让黑洞都为之颤抖、让室友都为之窒息、让时光都为之倾倒的绝世男子。认识他，是你此生最大的幸运；凝视他，则是你此生最危险的冒险。</p>
+    </div>
+
+    <div class="section-title">兴趣爱好</div>
+    <div class="tags">
+      <span class="tag"><span class="icon">🕳️</span>驯服黑洞</span>
+      <span class="tag"><span class="icon">👊</span>格斗搏击</span>
+      <span class="tag"><span class="icon">💭</span>思念故人</span>
+      <span class="tag"><span class="icon">🌌</span>宇宙物理</span>
+      <span class="tag"><span class="icon">😎</span>保持帅气</span>
+      <span class="tag"><span class="icon">💰</span>V人50</span>
+      <span class="tag"><span class="icon">🥊</span>宿舍格斗</span>
+      <span class="tag"><span class="icon">🌙</span>深夜emo</span>
+      <span class="tag"><span class="icon">👑</span>王子日常</span>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="section-title">经典语录</div>
+        <div class="quotes-box">
+          <div class="quote-item">
+            <div class="q-label">口头禅</div>
+            <div class="q-text">「v我50，看看实力。」</div>
+          </div>
+          <div class="quote-item">
+            <div class="q-label">战斗宣言</div>
+            <div class="q-text">「你以为我是在跟你闹？不，我是在教做人。」</div>
+          </div>
+          <div class="quote-item">
+            <div class="q-label">人生哲学</div>
+            <div class="q-text">「能驯服黑洞的人，还会在意这点小事？」</div>
+          </div>
+          <div class="quote-item">
+            <div class="q-label">深情独白</div>
+            <div class="q-text">「戈园……王洁……你们是我宇宙中唯一的星光。」</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">技能面板</div>
+        <div class="skills-box">
+          <div class="skill-item">
+            <div class="skill-header">
+              <span class="skill-name">黑洞驯服术</span>
+              <span class="skill-value">MAX</span>
+            </div>
+            <div class="skill-bar"><div class="skill-fill" style="width: 100%"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header">
+              <span class="skill-name">颜值指数</span>
+              <span class="skill-value">99.9</span>
+            </div>
+            <div class="skill-bar"><div class="skill-fill" style="width: 99.9%"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header">
+              <span class="skill-name">直拳威力</span>
+              <span class="skill-value">95</span>
+            </div>
+            <div class="skill-bar"><div class="skill-fill" style="width: 95%"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header">
+              <span class="skill-name">锁喉精通</span>
+              <span class="skill-value">97</span>
+            </div>
+            <div class="skill-bar"><div class="skill-fill" style="width: 97%"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header">
+              <span class="skill-name">深情念叨</span>
+              <span class="skill-value">100</span>
+            </div>
+            <div class="skill-bar"><div class="skill-fill" style="width: 100%"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header">
+              <span class="skill-name">V人50术</span>
+              <span class="skill-value">88</span>
+            </div>
+            <div class="skill-bar"><div class="skill-fill" style="width: 88%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="toggle-btn" id="themeBtn">🌙 夜间模式</button>
+
+    <p class="footer">Made with 💙 for 张益瑞</p>
+  </div>
+
+<script>
+  const html = document.documentElement;
+  const body = document.body;
+  const btn = document.getElementById('themeBtn');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      body.setAttribute('data-theme', 'light');
+      btn.textContent = '☀️ 日间模式';
+    } else {
+      body.setAttribute('data-theme', 'dark');
+      btn.textContent = '🌙 夜间模式';
+    }
+    updateCanvasParticles();
+  }
+
+  btn.addEventListener('click', () => {
+    const current = body.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function initParticles() {
+    particles = [];
+    const count = Math.min(60, Math.floor(window.innerWidth / 18));
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.5 + 0.2
+      });
+    }
+  }
+
+  function getParticleColor() {
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    return isDark ? '0, 212, 255' : '0, 102, 204';
+  }
+
+  function updateCanvasParticles() {
+    const color = getParticleColor();
+    particles.forEach(p => {
+      p._color = color;
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const color = getParticleColor();
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${color}, ${p.alpha})`;
+      ctx.fill();
+    });
+
+    particles.forEach((a, i) => {
+      particles.slice(i + 1).forEach(b => {
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(${color}, ${0.12 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      });
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+    initParticles();
+  });
+
+  resizeCanvas();
+  initParticles();
+  animate();
+
+  applyTheme('dark');
+</script>
+</body>
+</html>
